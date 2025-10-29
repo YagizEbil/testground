@@ -25,9 +25,12 @@ RUN cd / && CGO_ENABLED=0 GOOS=linux go build -ldflags "-X github.com/testground
 #::: RUNTIME CONTAINER
 #:::
 
-FROM debian:buster
+FROM debian:bullseye-slim
 
-RUN apt update && apt install -y iptables
+# Use non-interactive apt-get and clean up apt lists to keep the image small.
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends iptables \
+	&& rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /usr/local/bin
 COPY --from=0 /testground /usr/local/bin/testground
 ENV PATH="/usr/local/bin:${PATH}"
