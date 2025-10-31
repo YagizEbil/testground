@@ -1,0 +1,32 @@
+Bootstrap: docker
+From: debian:bullseye-slim
+
+%labels
+    Maintainer Testground Maintainers
+    Description Testground daemon packaged for Apptainer/Singularity
+    Version edge
+
+%help
+    This image wraps the Testground daemon and assets for Apptainer/Singularity.
+    Build the Linux binary on the host first, then run:
+        apptainer build testground.sif contrib/singularity/testground.def
+
+%files
+    build/linux/testground /usr/local/bin/testground
+    static /static
+    tmpl /tmpl
+
+%post
+    set -eux
+    apt-get update
+    apt-get install -y --no-install-recommends ca-certificates
+    rm -rf /var/lib/apt/lists/*
+    mkdir -p /usr/local/bin
+    chmod 0755 /usr/local/bin/testground
+    ln -s /usr/local/bin/testground /testground
+
+%environment
+    export PATH="/usr/local/bin:${PATH}"
+
+%runscript
+    exec /usr/local/bin/testground --vv daemon "$@"
